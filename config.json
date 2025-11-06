@@ -1,0 +1,26 @@
+{
+	"database": {
+		"path": "./data/powerhive.db"
+	},
+	"network": {
+		"subnets": [
+			"192.168.1.0/24"
+		],
+		"light_scan_timeout_ms": 300,
+		"miner_probe_timeout_ms": 1500
+	},
+	"intervals": {
+		"discovery_seconds": 30,
+		"status_seconds": 30,
+		"telemetry_seconds": 60,
+		"plant_seconds": 60,
+		"balancer_seconds": 60
+	},
+	"http": {
+		"addr": ":8080"
+	},
+	"plant": {
+		"api_endpoint": "https://energy-aggregator.fly.dev/data/latest",
+		"api_key": "kdM_bTzzDxLxlpOf9ki29S9LyVA-hFmx"
+	}
+}

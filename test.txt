@@ -1,0 +1,3218 @@
+
+[1m[96mStarting Firmware API Tests for 192.168.1.21[0m
+Base URL: http://192.168.1.21/api/v1
+Timeout: 5s
+
+[1m[95m================================================================================[0m
+[1m[95mPHASE 1: AUTHENTICATION[0m
+[1m[95m================================================================================[0m
+
+[1mPOST /unlock[0m [94m[NO AUTH][0m
+[92m✓ SUCCESS[0m
+{
+  "token": "vH6CzzM4yUZhbVNFMpFYe7Ece5Jv0sTJ"
+}
+
+[1mGET /apikeys[0m [93m[BEARER TOKEN][0m
+[92m✓ SUCCESS[0m
+[
+  {
+    "key": "8d8075b12055db5bdb02404fd592da8d",
+    "description": "PowerHive"
+  }
+]
+
+[92mFound existing PowerHive API key[0m
+
+[1m[95m================================================================================[0m
+[1m[95mPHASE 2: UNAUTHENTICATED ENDPOINTS[0m
+[1m[95m================================================================================[0m
+
+[1mGET /info[0m [94m[NO AUTH][0m
+[92m✓ SUCCESS[0m
+{
+  "miner": "Antminer S19",
+  "model": "s19",
+  "fw_name": "Vnish",
+  "fw_version": "1.2.6",
+  "build_uuid": "5b50805f-a372-4f07-bbc2-5020aa03321a",
+  "build_name": "vnishnet",
+  "platform": "xil",
+  "install_type": "nand",
+  "build_time": "2025-05-29 19:22:26+00:00",
+  "algorithm": "sha256d",
+  "hr_measure": "GH/s",
+  "system": {
+    "os": "GNU/Linux",
+    "miner_name": "s19",
+    "file_system_version": "",
+    "mem_total": 233712,
+    "mem_free": 165764,
+    "mem_free_percent": 70,
+    "mem_buf": 31964,
+    "mem_buf_percent": 13,
+    "network_status": {
+      "mac": "16:0E:7E:6B:B1:97",
+      "dhcp": true,
+      "ip": "192.168.1.21",
+      "netmask": "255.255.255.0",
+      "gateway": "192.168.1.1",
+      "dns": [
+        "192.168.1.1"
+      ],
+      "hostname": "Antminer"
+    },
+    "uptime": "0:02"
+  },
+  "serial": "N/A"
+}
+
+[1mGET /model[0m [94m[NO AUTH][0m
+[92m✓ SUCCESS[0m
+{
+  "full_name": "Antminer S19",
+  "model": "s19",
+  "algorithm": "sha256d",
+  "series": "x19",
+  "platform": "xil",
+  "install_type": "nand",
+  "hr_measure": "GH/s",
+  "serial": "N/A",
+  "chain": {
+    "chips_per_chain": 76,
+    "chips_per_domain": 2,
+    "num_chains": 3,
+    "topology": {
+      "chips": [
+        [
+          16,
+          17,
+          18,
+          19,
+          56,
+          57,
+          58,
+          59
+        ],
+        [
+          15,
+          14,
+          21,
+          20,
+          55,
+          54,
+          61,
+          60
+        ],
+        [
+          12,
+          13,
+          22,
+          23,
+          52,
+          53,
+          62,
+          63
+        ],
+        [
+          11,
+          10,
+          25,
+          24,
+          51,
+          50,
+          65,
+          64
+        ],
+        [
+          8,
+          9,
+          26,
+          27,
+          48,
+          49,
+          66,
+          67
+        ],
+        [
+          7,
+          6,
+          29,
+          28,
+          47,
+          46,
+          69,
+          68
+        ],
+        [
+          4,
+          5,
+          30,
+          31,
+          44,
+          45,
+          70,
+          71
+        ],
+        [
+          3,
+          2,
+          33,
+          32,
+          43,
+          42,
+          73,
+          72
+        ],
+        [
+          0,
+          1,
+          34,
+          35,
+          40,
+          41,
+          74,
+          75
+        ],
+        [
+          -1,
+          -1,
+          37,
+          36,
+          39,
+          38,
+          -1,
+          -1
+        ]
+      ],
+      "num_cols": 8,
+      "num_rows": 10
+    }
+  },
+  "cooling": {
+    "min_fan_pwm": 10,
+    "min_target_temp": 20,
+    "max_target_temp": 90,
+    "fan_min_count": {
+      "min": 1,
+      "max": 4,
+      "default": 4
+    }
+  },
+  "overclock": {
+    "max_voltage": 1535,
+    "min_voltage": 1200,
+    "default_voltage": 1380,
+    "max_freq": 1000,
+    "min_freq": 50,
+    "default_freq": 675,
+    "warn_freq": 850,
+    "max_voltage_stock_psu": 1500
+  }
+}
+
+[1mGET /status[0m [94m[NO AUTH][0m
+[92m✓ SUCCESS[0m
+{
+  "miner_state": "mining",
+  "miner_state_time": 80,
+  "find_miner": false,
+  "restart_required": false,
+  "reboot_required": false,
+  "unlocked": false
+}
+
+[1m[95m================================================================================[0m
+[1m[95mPHASE 3: API KEY AUTHENTICATED ENDPOINTS[0m
+[1m[95m================================================================================[0m
+
+[1mGET /summary[0m [96m[API KEY][0m
+[92m✓ SUCCESS[0m
+{
+  "miner": {
+    "miner_status": {
+      "miner_state": "mining",
+      "miner_state_time": 80
+    },
+    "miner_type": "Antminer S19 (Vnish 1.2.6)",
+    "hr_stock": 95879.0,
+    "average_hashrate": 27.123457,
+    "instant_hashrate": 50.802227,
+    "hr_realtime": 50802.227,
+    "hr_nominal": 63919.8,
+    "hr_average": 27123.457,
+    "pcb_temp": {
+      "min": 27,
+      "max": 37
+    },
+    "chip_temp": {
+      "min": 37,
+      "max": 47
+    },
+    "power_consumption": 0,
+    "power_usage": 0,
+    "power_efficiency": 0.0,
+    "hw_errors_percent": 0.0,
+    "hr_error": 0.0,
+    "hw_errors": 0,
+    "devfee_percent": 0.0,
+    "devfee": 0.0,
+    "pools": [
+      {
+        "id": 0,
+        "url": "btc-latin.f2pool.com:1314",
+        "pool_type": "UserPool",
+        "user": "reparo.s19",
+        "status": "active",
+        "asic_boost": true,
+        "diff": "131K",
+        "accepted": 2,
+        "rejected": 0,
+        "stale": 0,
+        "ls_diff": 262144.0,
+        "ls_time": "0:00:14",
+        "diffa": 524288.0,
+        "ping": 35
+      },
+      {
+        "id": 1,
+        "url": "DevFee",
+        "pool_type": "DevFee",
+        "user": "DevFee",
+        "status": "working",
+        "asic_boost": false,
+        "diff": "",
+        "accepted": 0,
+        "rejected": 0,
+        "stale": 0,
+        "ls_diff": 0.0,
+        "ls_time": "0",
+        "diffa": 0.0,
+        "ping": 0
+      }
+    ],
+    "cooling": {
+      "fan_num": 4,
+      "fans": [
+        {
+          "id": 0,
+          "rpm": 1800,
+          "status": "ok",
+          "max_rpm": 6000
+        },
+        {
+          "id": 1,
+          "rpm": 1800,
+          "status": "ok",
+          "max_rpm": 6000
+        },
+        {
+          "id": 2,
+          "rpm": 1440,
+          "status": "ok",
+          "max_rpm": 6000
+        },
+        {
+          "id": 3,
+          "rpm": 1800,
+          "status": "ok",
+          "max_rpm": 6000
+        }
+      ],
+      "settings": {
+        "mode": {
+          "name": "auto"
+        }
+      },
+      "fan_duty": 28
+    },
+    "chains": [
+      {
+        "id": 1,
+        "frequency": 675.0,
+        "voltage": 13800,
+        "power_consumption": 0,
+        "hashrate_ideal": 31959.9,
+        "hashrate_rt": 26384.195,
+        "hashrate_percentage": 43.55,
+        "hr_error": 0.0,
+        "hw_errors": 0,
+        "pcb_temp": {
+          "min": 32,
+          "max": 37
+        },
+        "chip_temp": {
+          "min": 42,
+          "max": 47
+        },
+        "chip_statuses": {
+          "red": 76,
+          "orange": 0,
+          "grey": 0
+        },
+        "status": {
+          "state": "mining"
+        }
+      },
+      {
+        "id": 2,
+        "frequency": 675.0,
+        "voltage": 13800,
+        "power_consumption": 0,
+        "hashrate_ideal": 31959.9,
+        "hashrate_rt": 24416.275,
+        "hashrate_percentage": 41.25,
+        "hr_error": 0.0,
+        "hw_errors": 0,
+        "pcb_temp": {
+          "min": 32,
+          "max": 35
+        },
+        "chip_temp": {
+          "min": 42,
+          "max": 45
+        },
+        "chip_statuses": {
+          "red": 76,
+          "orange": 0,
+          "grey": 0
+        },
+        "status": {
+          "state": "mining"
+        }
+      },
+      {
+        "id": 3,
+        "frequency": 675.0,
+        "voltage": 13800,
+        "power_consumption": 0,
+        "hashrate_ideal": 0.0,
+        "hashrate_rt": 1.756137,
+        "hashrate_percentage": 0.0,
+        "hr_error": 0.0,
+        "hw_errors": 0,
+        "pcb_temp": {
+          "min": 27,
+          "max": 29
+        },
+        "chip_temp": {
+          "min": 37,
+          "max": 39
+        },
+        "chip_statuses": {
+          "red": 76,
+          "orange": 0,
+          "grey": 0
+        },
+        "status": {
+          "state": "mining"
+        }
+      }
+    ],
+    "found_blocks": 0,
+    "best_share": 329467,
+    "psu": {
+      "temps": {
+        "llc1_temp": -12
+      }
+    }
+  }
+}
+
+[1mGET /perf-summary[0m [96m[API KEY][0m
+[92m✓ SUCCESS[0m
+{
+  "current_preset": {
+    "name": "disabled",
+    "pretty": "Disabled",
+    "status": "untuned",
+    "modded_psu_required": false,
+    "globals": {
+      "volt": 1380,
+      "freq": 675
+    }
+  },
+  "preset_switcher": {
+    "enabled": false,
+    "top_preset": null,
+    "decrease_temp": 75,
+    "rise_temp": 55,
+    "check_time": 300,
+    "autochange_top_preset": false,
+    "ignore_fan_speed": false,
+    "min_preset": null,
+    "power_delta": 0
+  }
+}
+
+[1mGET /chains[0m [96m[API KEY][0m
+[92m✓ SUCCESS[0m
+[
+  {
+    "id": 1,
+    "status": {
+      "state": "mining"
+    },
+    "hr_realtime": 13921.459,
+    "hr_nominal": 31959.9,
+    "freq": 675.0,
+    "sensors": [
+      {
+        "state": "measure",
+        "board": 33,
+        "chip": 43,
+        "loc": 17
+      },
+      {
+        "state": "measure",
+        "board": 32,
+        "chip": 42,
+        "loc": 60
+      },
+      {
+        "state": "measure",
+        "board": 36,
+        "chip": 46,
+        "loc": 38
+      },
+      {
+        "state": "measure",
+        "board": 37,
+        "chip": 47,
+        "loc": 39
+      }
+    ],
+    "chips": [
+      {
+        "id": 1,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 2,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 3,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 4,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 5,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 6,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 7,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 8,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 9,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 10,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 11,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 12,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 13,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 14,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 15,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 16,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 17,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 18,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 19,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 20,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 21,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 22,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 23,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 24,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 25,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 26,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 27,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 28,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 29,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 30,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 31,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 32,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 33,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 34,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 35,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 36,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 37,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 38,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 39,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 40,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 41,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 42,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 43,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 44,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 45,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 46,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 47,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 48,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 49,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 50,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 51,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 52,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 53,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 54,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 55,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 56,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 57,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 58,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 59,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 60,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 61,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 62,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 63,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 64,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 65,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 66,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 67,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 68,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 69,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 70,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 71,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 72,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 73,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 74,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 75,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 76,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "status": {
+      "state": "mining"
+    },
+    "hr_realtime": 13183.612,
+    "hr_nominal": 31959.9,
+    "freq": 675.0,
+    "sensors": [
+      {
+        "state": "measure",
+        "board": 35,
+        "chip": 45,
+        "loc": 17
+      },
+      {
+        "state": "measure",
+        "board": 34,
+        "chip": 44,
+        "loc": 60
+      },
+      {
+        "state": "measure",
+        "board": 33,
+        "chip": 43,
+        "loc": 38
+      },
+      {
+        "state": "measure",
+        "board": 35,
+        "chip": 45,
+        "loc": 39
+      }
+    ],
+    "chips": [
+      {
+        "id": 1,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 2,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 3,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 4,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 5,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 6,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 7,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 8,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 9,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 10,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 11,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 12,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 13,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 14,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 15,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 16,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 17,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 18,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 19,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 20,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 21,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 22,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 23,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 24,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 25,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 26,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 27,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 28,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 29,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 30,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 31,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 32,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 33,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 34,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 35,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 36,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 37,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 38,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 39,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 40,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 41,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 42,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 43,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 44,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 45,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 46,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 47,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 48,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 49,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 50,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 51,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 52,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 53,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 54,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 55,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 56,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 57,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 58,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 59,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 60,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 61,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 62,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 63,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 64,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 65,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 66,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 67,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 68,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 69,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 70,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 71,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 72,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 73,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 74,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 75,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 76,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "status": {
+      "state": "mining"
+    },
+    "hr_realtime": 18.384,
+    "hr_nominal": 0.0,
+    "freq": 675.0,
+    "sensors": [
+      {
+        "state": "measure",
+        "board": 29,
+        "chip": 39,
+        "loc": 17
+      },
+      {
+        "state": "measure",
+        "board": 27,
+        "chip": 37,
+        "loc": 60
+      },
+      {
+        "state": "measure",
+        "board": 28,
+        "chip": 38,
+        "loc": 38
+      },
+      {
+        "state": "measure",
+        "board": 28,
+        "chip": 38,
+        "loc": 39
+      }
+    ],
+    "chips": [
+      {
+        "id": 1,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 2,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 3,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 4,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 5,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 6,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 7,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 8,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 9,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 10,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 11,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 12,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 13,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 14,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 15,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 16,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 17,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 18,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 19,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 20,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 21,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 22,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 23,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 24,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 25,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 26,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 27,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 28,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 29,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 30,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 31,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 32,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 33,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 34,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 35,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 36,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 37,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 38,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 39,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 40,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 41,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 42,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 43,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 44,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 45,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 46,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 47,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 48,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 49,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 50,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 51,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 52,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 53,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 54,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 55,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 56,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 57,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 58,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 59,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 60,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 61,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 62,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 63,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 64,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 65,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 66,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 67,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 68,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 69,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 70,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 71,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 72,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 73,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 74,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 75,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      },
+      {
+        "id": 76,
+        "hr": 0.0,
+        "freq": 675,
+        "volt": 0,
+        "temp": 0.0,
+        "errs": 0,
+        "grade": "red",
+        "throttled": false
+      }
+    ]
+  }
+]
+
+[1m[95m================================================================================[0m
+[1m[95mPHASE 4: BEARER TOKEN AUTHENTICATED ENDPOINTS[0m
+[1m[95m================================================================================[0m
+
+[1mGET /autotune/presets[0m [93m[BEARER TOKEN][0m
+[92m✓ SUCCESS[0m
+[
+  {
+    "name": "disabled",
+    "pretty": "Disabled",
+    "status": "untuned",
+    "modded_psu_required": false,
+    "tune_settings": {
+      "hashrate": 0,
+      "volt": 13800,
+      "freq": 675,
+      "chains": [
+        {
+          "freq": 0,
+          "chips": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "freq": 0,
+          "chips": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "freq": 0,
+          "chips": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "modified": true
+    }
+  },
+  {
+    "name": "1100",
+    "pretty": "1100 watt ~ 53 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "1300",
+    "pretty": "1300 watt ~ 58 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "1500",
+    "pretty": "1500 watt ~ 63 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "1700",
+    "pretty": "1700 watt ~ 68 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "1900",
+    "pretty": "1900 watt ~ 73 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "2100",
+    "pretty": "2100 watt ~ 78 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "2350",
+    "pretty": "2350 watt ~ 85 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "2620",
+    "pretty": "2620 watt ~ 91 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "2950",
+    "pretty": "2950 watt ~ 99 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "3200",
+    "pretty": "3200 watt ~ 102 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "3350",
+    "pretty": "3350 watt ~ 105 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "3750",
+    "pretty": "3750 watt ~ 110 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "4000",
+    "pretty": "4000 watt ~ 115 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "4260",
+    "pretty": "4260 watt ~ 120 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  },
+  {
+    "name": "4690",
+    "pretty": "4690 watt ~ 124 TH",
+    "status": "untuned",
+    "modded_psu_required": false
+  }
+]
+
+[1m[95m================================================================================[0m
+[1m[95mPHASE 5: MUTATING ENDPOINTS (SKIPPED)[0m
+[1m[95m================================================================================[0m
+
+[1mPOST /autotune/preset[0m [96m[API KEY][0m
+[93mNOTE: This will actually change the miner's preset to 'example-preset'[0m
+[93mSkipping this test to avoid unwanted changes. Remove this skip to test.[0m
+
+[1m[95m================================================================================[0m
+[1m[95mTEST SUMMARY[0m
+[1m[95m================================================================================[0m
+
+Total endpoints tested: 10
+[92m✓ Passed: 9[0m
+[91m✗ Failed: 0[0m
+[93m⊘ Skipped: 1[0m
+
+[1mBearer Token: vH6CzzM4yUZhbVNFMpFYe7Ece5Jv0sTJ[0m
+[1mAPI Key: 8d8075b12055db5bdb02404fd592da8d[0m

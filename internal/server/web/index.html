@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PowerHive Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <h1>PowerHive Dashboard</h1>
+    <p class="subtitle">Monitor miners, adjust presets, and inspect telemetry at a glance.</p>
+  </header>
+
+  <main>
+    <section id="notifications" aria-live="polite"></section>
+
+    <section id="miners-section">
+      <div class="section-header">
+        <h2>Miners</h2>
+        <button id="refresh-miners" type="button">Refresh</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="miners-table">
+          <thead>
+            <tr>
+              <th>Miner</th>
+              <th>Hashrate</th>
+              <th>Power</th>
+              <th>Temp Range</th>
+              <th>Fans</th>
+              <th>Preset</th>
+              <th>Uptime</th>
+              <th>Chains</th>
+              <th>Managed</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="models-section">
+      <div class="section-header">
+        <h2>Models</h2>
+      </div>
+      <div id="models-container" class="cards"></div>
+    </section>
+
+    <section id="energy-section">
+      <div class="section-header">
+        <h2>Energy Management</h2>
+      </div>
+
+      <div class="balance-status">
+        <h3>
+          Status: <span id="balance-status-text" class="status-badge">Loading...</span>
+          <span id="balance-last-update" class="last-update"></span>
+        </h3>
+        <div class="metrics-grid">
+          <div class="metric">
+            <label>Plant Generation:</label>
+            <span id="plant-generation" class="metric-value">--</span> kW
+          </div>
+          <div class="metric">
+            <label>Container Consumption:</label>
+            <span id="container-consumption" class="metric-value">--</span> kW
+          </div>
+          <div class="metric">
+            <label>Available Power:</label>
+            <span id="available-power" class="metric-value">--</span> kW
+          </div>
+          <div class="metric">
+            <label>Target Power:</label>
+            <span id="target-power" class="metric-value">--</span> kW
+          </div>
+          <div class="metric">
+            <label>Miner Consumption:</label>
+            <span id="current-consumption" class="metric-value">--</span> W
+          </div>
+          <div class="metric">
+            <label>Managed Miners:</label>
+            <span id="managed-count" class="metric-value">--</span>
+          </div>
+          <div class="metric metric-control">
+            <label for="safety-margin-input">Safety Margin:</label>
+            <div class="input-group">
+              <input type="number" id="safety-margin-input" min="0" max="50" step="1" value="10">
+              <span class="input-suffix">%</span>
+              <button id="update-safety-margin" type="button">Update</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <h3>Generation vs Consumption</h3>
+        <canvas id="energy-chart"></canvas>
+      </div>
+
+      <div class="balance-events">
+        <h3>Recent Balance Events</h3>
+        <div class="table-wrapper">
+          <table id="balance-events-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Miner</th>
+                <th>Preset Change</th>
+                <th>Power Change</th>
+                <th>Reason</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="miner-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal__backdrop"></div>
+    <div id="miner-modal-dialog" class="modal__dialog" role="dialog" aria-modal="true">
+      <div id="miner-modal-content" class="modal__content"></div>
+    </div>
+  </div>
+
+  <footer>
+    <p>PowerHive Automation &bull; Live network monitoring</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="/app.js" defer></script>
+</body>
+</html>

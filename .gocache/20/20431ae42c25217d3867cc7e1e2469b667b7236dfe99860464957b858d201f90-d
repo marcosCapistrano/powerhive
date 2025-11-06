@@ -1,0 +1,9 @@
+./helpers.go
+./miners.go
+./models.go
+./schema.go
+./settings.go
+./statuses.go
+./store.go
+./telemetry.go
+./types.go
