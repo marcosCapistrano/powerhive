@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	statusWorkerCount = 4
+	statusWorkerCount = 100
 )
 
 // StatusPoller captures periodic miner summaries.

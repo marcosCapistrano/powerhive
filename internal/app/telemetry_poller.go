@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	telemetryWorkerCount = 4
+	telemetryWorkerCount = 30
 )
 
 // TelemetryPoller captures chip-level telemetry on a slower cadence.

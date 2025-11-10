@@ -10,10 +10,10 @@
 		"miner_probe_timeout_ms": 1500
 	},
 	"intervals": {
-		"discovery_seconds": 30,
-		"status_seconds": 30,
-		"telemetry_seconds": 60,
-		"plant_seconds": 60,
+		"discovery_seconds": 60,
+		"status_seconds": 60,
+		"telemetry_seconds": 3600,
+		"plant_seconds": 30,
 		"balancer_seconds": 60
 	},
 	"http": {

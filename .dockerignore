@@ -1,0 +1,52 @@
+# Git
+.git/
+.gitignore
+.github/
+
+# Build artifacts
+.gocache/
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Data and runtime files
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Documentation (already embedded or not needed in image)
+*.md
+!README.md
+docs/
+
+# Claude AI
+.claude/
+
+# Logs
+*.log
+
+# Test files
+*_test.go
+testdata/
+
+# CI/CD
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
