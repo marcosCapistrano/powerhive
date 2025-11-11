@@ -5,7 +5,7 @@ services:
     image: powerhive:latest
     container_name: powerhive
     build:
-      context: https://github.com/marcosCapistrano/powerhive.git#main
+      context: .
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
