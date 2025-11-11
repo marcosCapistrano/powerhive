@@ -40,6 +40,13 @@ func nullableString(value *string) any {
 	return strings.TrimSpace(*value)
 }
 
+func nullableBytes(value []byte) any {
+	if len(value) == 0 {
+		return nil
+	}
+	return value
+}
+
 func nullableTrimmedString(value *string) any {
 	if value == nil {
 		return nil

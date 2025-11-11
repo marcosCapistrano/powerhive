@@ -83,50 +83,66 @@ func (p *PlantPoller) poll(ctx context.Context) error {
 		return fmt.Errorf("decode plant response: %w", err)
 	}
 
-	if !apiResp.Success {
-		return fmt.Errorf("plant API returned success=false")
-	}
+	reading := apiResp.Reading
 
-	if len(apiResp.Data) == 0 {
-		p.log.Warn("plant API returned no data")
+	// Check confidence score - skip readings with confidence ≤ 0.8
+	if reading.Trust.ConfidenceScore <= 0.8 {
+		p.log.Warn("skipping low confidence reading",
+			"confidence", reading.Trust.ConfidenceScore,
+			"status", reading.Trust.Status,
+			"plant_id", reading.PlantID,
+		)
 		return nil
 	}
 
-	// Get the most recent reading (first in array)
-	latest := apiResp.Data[0]
-
-	// Calculate total container consumption
-	totalContainerConsumption := 0.0
-	for _, consumption := range latest.ContainerConsumption {
-		totalContainerConsumption += consumption
+	// Extract individual source data (already in MW from API)
+	generationSources := make(map[string]float64)
+	for sourceName, source := range reading.Generation {
+		if source.Status == "success" {
+			generationSources[sourceName] = source.ValueMW
+		}
 	}
 
-	// Calculate available power (generation - container consumption)
-	availablePower := latest.TotalGeneration - totalContainerConsumption
+	consumptionSources := make(map[string]float64)
+	for sourceName, source := range reading.Consumption {
+		if source.Status == "success" {
+			consumptionSources[sourceName] = source.ValueMW
+		}
+	}
+
+	// Convert totals from MW to kW (multiply by 1000)
+	totalGenerationKW := reading.Totals.GenerationMW * 1000
+	totalConsumptionKW := reading.Totals.ConsumptionMW * 1000
+
+	// Calculate available power (generation - consumption) in kW
+	availablePowerKW := totalGenerationKW - totalConsumptionKW
 
 	// Store raw JSON for debugging
 	rawJSON, _ := json.Marshal(apiResp)
 	rawStr := string(rawJSON)
 
 	input := database.PlantReadingInput{
-		PlantID:                   latest.PlantID,
-		TotalGeneration:           latest.TotalGeneration,
-		TotalContainerConsumption: totalContainerConsumption,
-		AvailablePower:            availablePower,
+		PlantID:                   reading.PlantID,
+		TotalGeneration:           totalGenerationKW,
+		TotalContainerConsumption: totalConsumptionKW,
+		AvailablePower:            availablePowerKW,
+		GenerationSources:         generationSources,
+		ConsumptionSources:        consumptionSources,
 		RawData:                   &rawStr,
-		RecordedAt:                latest.Timestamp,
+		RecordedAt:                reading.CollectionTimestamp,
 	}
 
-	reading, err := p.store.RecordPlantReading(ctx, input)
+	stored, err := p.store.RecordPlantReading(ctx, input)
 	if err != nil {
 		return fmt.Errorf("store plant reading: %w", err)
 	}
 
 	p.log.Info("plant data recorded",
-		"plant_id", reading.PlantID,
-		"generation_kw", reading.TotalGeneration,
-		"container_kw", reading.TotalContainerConsumption,
-		"available_kw", reading.AvailablePower,
+		"plant_id", stored.PlantID,
+		"generation_kw", stored.TotalGeneration,
+		"container_kw", stored.TotalContainerConsumption,
+		"available_kw", stored.AvailablePower,
+		"confidence", reading.Trust.ConfidenceScore,
 	)
 
 	return nil
@@ -134,15 +150,37 @@ func (p *PlantPoller) poll(ctx context.Context) error {
 
 // PlantAPIResponse models the response from the energy aggregator API.
 type PlantAPIResponse struct {
-	Success bool               `json:"success"`
-	Count   int                `json:"count"`
-	Data    []PlantDataReading `json:"data"`
+	Reading PlantDataReading `json:"reading"`
 }
 
 // PlantDataReading represents a single plant energy reading from the API.
 type PlantDataReading struct {
-	Timestamp            time.Time              `json:"timestamp"`
-	PlantID              string                 `json:"plant_id"`
-	TotalGeneration      float64                `json:"total_generation"`
-	ContainerConsumption map[string]float64     `json:"container_consumption"`
+	ID                  int                       `json:"id"`
+	PlantID             string                    `json:"plant_id"`
+	CollectionTimestamp time.Time                 `json:"collection_timestamp"`
+	Generation          map[string]SourceReading  `json:"generation"`
+	Consumption         map[string]SourceReading  `json:"consumption"`
+	Totals              PlantTotals               `json:"totals"`
+	Trust               TrustInfo                 `json:"trust"`
+}
+
+// SourceReading represents an individual energy source (generator or container) with metadata.
+type SourceReading struct {
+	SourceTimestamp time.Time `json:"source_timestamp"`
+	Status          string    `json:"status"`
+	ValueMW         float64   `json:"value_mw"`
+}
+
+// PlantTotals contains pre-calculated aggregate values.
+type PlantTotals struct {
+	GenerationMW  float64 `json:"generation_mw"`
+	ConsumptionMW float64 `json:"consumption_mw"`
+	ExportedMW    float64 `json:"exported_mw"`
+}
+
+// TrustInfo contains confidence scoring for the reading.
+type TrustInfo struct {
+	ConfidenceScore float64 `json:"confidence_score"`
+	Status          string  `json:"status"`
+	Summary         string  `json:"summary"`
 }

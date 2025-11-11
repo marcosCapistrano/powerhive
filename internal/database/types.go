@@ -213,6 +213,8 @@ type PlantReading struct {
 	TotalGeneration            float64
 	TotalContainerConsumption  float64
 	AvailablePower             float64
+	GenerationSources          map[string]float64 // Individual generator sources (e.g., "generoso", "nogueira") in MW
+	ConsumptionSources         map[string]float64 // Individual container sources (e.g., "container_eles", "container_mazp") in MW
 	RawData                    *string
 	RecordedAt                 time.Time
 }
@@ -223,6 +225,8 @@ type PlantReadingInput struct {
 	TotalGeneration           float64
 	TotalContainerConsumption float64
 	AvailablePower            float64
+	GenerationSources         map[string]float64 // Individual generator sources in MW
+	ConsumptionSources        map[string]float64 // Individual container sources in MW
 	RawData                   *string
 	RecordedAt                time.Time
 }

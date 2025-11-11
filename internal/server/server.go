@@ -903,12 +903,14 @@ func (s *Server) updateSafetyMargin(w http.ResponseWriter, r *http.Request) {
 // DTOs for new endpoints
 
 type plantReadingDTO struct {
-	ID                        int64    `json:"id"`
-	PlantID                   string   `json:"plant_id"`
-	TotalGeneration           float64  `json:"total_generation"`
-	TotalContainerConsumption float64  `json:"total_container_consumption"`
-	AvailablePower            float64  `json:"available_power"`
-	RecordedAt                string   `json:"recorded_at"`
+	ID                        int64              `json:"id"`
+	PlantID                   string             `json:"plant_id"`
+	TotalGeneration           float64            `json:"total_generation"`
+	TotalContainerConsumption float64            `json:"total_container_consumption"`
+	AvailablePower            float64            `json:"available_power"`
+	GenerationSources         map[string]float64 `json:"generation_sources,omitempty"`
+	ConsumptionSources        map[string]float64 `json:"consumption_sources,omitempty"`
+	RecordedAt                string             `json:"recorded_at"`
 }
 
 func toPlantReadingDTO(reading database.PlantReading) plantReadingDTO {
@@ -918,6 +920,8 @@ func toPlantReadingDTO(reading database.PlantReading) plantReadingDTO {
 		TotalGeneration:           reading.TotalGeneration,
 		TotalContainerConsumption: reading.TotalContainerConsumption,
 		AvailablePower:            reading.AvailablePower,
+		GenerationSources:         reading.GenerationSources,
+		ConsumptionSources:        reading.ConsumptionSources,
 		RecordedAt:                formatTime(reading.RecordedAt),
 	}
 }

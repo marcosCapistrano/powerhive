@@ -121,6 +121,8 @@ var schemaStatements = []string{
 		recorded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);`,
 	`CREATE INDEX IF NOT EXISTS idx_plant_readings_recorded ON plant_readings(recorded_at DESC);`,
+	`ALTER TABLE plant_readings ADD COLUMN generation_sources TEXT;`,
+	`ALTER TABLE plant_readings ADD COLUMN consumption_sources TEXT;`,
 	`CREATE TABLE IF NOT EXISTS power_balance_events (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		miner_id TEXT NOT NULL,
