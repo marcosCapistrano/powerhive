@@ -60,7 +60,10 @@ func (p *PlantPoller) Run(ctx context.Context) {
 }
 
 func (p *PlantPoller) poll(ctx context.Context) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, p.cfg.Plant.APIEndpoint, nil)
+	// Build URL with plant_id query parameter
+	url := fmt.Sprintf("%s?plant_id=%s", p.cfg.Plant.APIEndpoint, p.cfg.Plant.PlantID)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return fmt.Errorf("create plant request: %w", err)
 	}

@@ -40,6 +40,7 @@ type HTTPConfig struct {
 type PlantConfig struct {
 	APIEndpoint string `json:"api_endpoint"`
 	APIKey      string `json:"api_key"`
+	PlantID     string `json:"plant_id"`
 }
 
 func Load(path string) (AppConfig, error) {
@@ -116,6 +117,10 @@ func (c *AppConfig) validate(baseDir string) error {
 
 	if c.Plant.APIKey == "" {
 		return fmt.Errorf("plant API key is required")
+	}
+
+	if c.Plant.PlantID == "" {
+		return fmt.Errorf("plant ID is required")
 	}
 
 	return nil
