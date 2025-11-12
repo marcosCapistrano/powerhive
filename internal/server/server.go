@@ -311,8 +311,9 @@ func (s *Server) listModels(w http.ResponseWriter, r *http.Request) {
 			dto.PresetsPower = make([]presetPowerDTO, 0, len(presetsPower))
 			for _, pp := range presetsPower {
 				dto.PresetsPower = append(dto.PresetsPower, presetPowerDTO{
-					Preset: pp.Value,
-					PowerW: pp.ExpectedPowerW,
+					Preset:     pp.Value,
+					PowerW:     pp.ExpectedPowerW,
+					HashrateTH: pp.ExpectedHashrateTH,
 				})
 			}
 		}
@@ -345,8 +346,9 @@ func (s *Server) getModel(w http.ResponseWriter, r *http.Request, alias string) 
 		dto.PresetsPower = make([]presetPowerDTO, 0, len(presetsPower))
 		for _, pp := range presetsPower {
 			dto.PresetsPower = append(dto.PresetsPower, presetPowerDTO{
-				Preset: pp.Value,
-				PowerW: pp.ExpectedPowerW,
+				Preset:     pp.Value,
+				PowerW:     pp.ExpectedPowerW,
+				HashrateTH: pp.ExpectedHashrateTH,
 			})
 		}
 	}
@@ -394,6 +396,27 @@ func (s *Server) updateModel(w http.ResponseWriter, r *http.Request, alias strin
 		maxPreset = model.MaxPreset
 	}
 
+	// Handle disabled preset power update
+	if req.DisabledPresetPowerW != nil {
+		if *req.DisabledPresetPowerW < 0 {
+			writeError(w, http.StatusBadRequest, "disabled_preset_power_w must be non-negative")
+			return
+		}
+
+		// Check if "disabled" preset exists for this model
+		if !containsCaseInsensitive(model.Presets, "disabled") {
+			writeError(w, http.StatusBadRequest, "model does not have a 'disabled' preset")
+			return
+		}
+
+		// Update the disabled preset power
+		if err := s.store.UpdatePresetMetrics(ctx, model.Alias, "disabled", req.DisabledPresetPowerW, nil); err != nil {
+			s.log.Error("update disabled preset power failed", "alias", alias, "err", err)
+			writeError(w, http.StatusInternalServerError, "failed to update disabled preset power")
+			return
+		}
+	}
+
 	updated, err := s.store.UpsertModel(ctx, database.ModelInput{
 		Name:      model.Name,
 		Alias:     model.Alias,
@@ -405,7 +428,25 @@ func (s *Server) updateModel(w http.ResponseWriter, r *http.Request, alias strin
 		return
 	}
 
-	writeJSON(w, http.StatusOK, toModelDTO(updated))
+	// Reload preset power data to include in response
+	presetsPower, err := s.store.GetModelPresets(ctx, updated.Alias)
+	if err != nil {
+		s.log.Warn("failed to load preset power", "model", updated.Alias, "err", err)
+	}
+
+	dto := toModelDTO(updated)
+	if len(presetsPower) > 0 {
+		dto.PresetsPower = make([]presetPowerDTO, 0, len(presetsPower))
+		for _, pp := range presetsPower {
+			dto.PresetsPower = append(dto.PresetsPower, presetPowerDTO{
+				Preset:     pp.Value,
+				PowerW:     pp.ExpectedPowerW,
+				HashrateTH: pp.ExpectedHashrateTH,
+			})
+		}
+	}
+
+	writeJSON(w, http.StatusOK, dto)
 }
 
 func methodNotAllowed(w http.ResponseWriter, allowed ...string) {
@@ -454,11 +495,12 @@ type updateMinerRequest struct {
 }
 
 type updateModelRequest struct {
-	MaxPreset *string `json:"max_preset"`
+	MaxPreset          *string  `json:"max_preset"`
+	DisabledPresetPowerW *float64 `json:"disabled_preset_power_w"`
 }
 
 func (r *updateModelRequest) HasUpdates() bool {
-	return r.MaxPreset != nil
+	return r.MaxPreset != nil || r.DisabledPresetPowerW != nil
 }
 
 type minerDTO struct {
@@ -482,8 +524,9 @@ type modelDTO struct {
 }
 
 type presetPowerDTO struct {
-	Preset string   `json:"preset"`
-	PowerW *float64 `json:"power_w"`
+	Preset     string   `json:"preset"`
+	PowerW     *float64 `json:"power_w"`
+	HashrateTH *float64 `json:"hashrate_th"`
 }
 
 type statusDTO struct {
@@ -761,7 +804,7 @@ func (s *Server) handleBalanceStatus(w http.ResponseWriter, r *http.Request) {
 		safetyMargin = 10.0
 	}
 
-	// Get all managed miners and calculate current consumption
+	// Get all miners and calculate consumption (managed + unmanaged)
 	miners, err := s.store.ListMiners(ctx)
 	if err != nil {
 		s.log.Error("list miners failed", "err", err)
@@ -770,21 +813,49 @@ func (s *Server) handleBalanceStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var currentConsumption float64
+	var managedConsumption float64
+	var unmanagedConsumption float64
 	managedCount := 0
 	for _, miner := range miners {
-		if !miner.Managed {
-			continue
+		// Count all online miners with power data
+		if miner.IP == nil || *miner.IP == "" {
+			continue // Skip offline miners
 		}
-		managedCount++
+
+		var minerPower float64
 		if miner.LatestStatus != nil && miner.LatestStatus.PowerConsumption != nil {
-			currentConsumption += *miner.LatestStatus.PowerConsumption
+			minerPower = *miner.LatestStatus.PowerConsumption
 		}
+
+		if miner.Managed {
+			managedCount++
+			managedConsumption += minerPower
+		} else {
+			unmanagedConsumption += minerPower
+		}
+		currentConsumption += minerPower
+	}
+
+	// Get expected consumption from app settings
+	var expectedConsumption float64
+	expectedConsumptionStr, err := s.store.GetAppSetting(ctx, "expected_consumption_w")
+	if err == nil {
+		if err := json.Unmarshal([]byte(expectedConsumptionStr), &expectedConsumption); err != nil {
+			s.log.Warn("failed to parse expected consumption", "err", err)
+			expectedConsumption = currentConsumption // Fallback to current
+		}
+	} else {
+		expectedConsumption = currentConsumption // Fallback to current if not set
 	}
 
 	var status balanceStatusDTO
 	status.SafetyMarginPercent = safetyMargin
 	status.ManagedMinersCount = managedCount
 	status.CurrentConsumptionW = currentConsumption
+	status.ManagedConsumptionW = managedConsumption
+	status.UnmanagedConsumptionW = unmanagedConsumption
+	status.ExpectedConsumptionW = expectedConsumption
+	status.ExpectedDeltaW = expectedConsumption - currentConsumption
 
 	if plantReading != nil {
 		status.PlantGenerationKW = plantReading.TotalGeneration
@@ -963,14 +1034,18 @@ func toPowerBalanceEventDTO(event database.PowerBalanceEvent) powerBalanceEventD
 }
 
 type balanceStatusDTO struct {
-	PlantGenerationKW    float64 `json:"plant_generation_kw"`
-	PlantContainerKW     float64 `json:"plant_container_kw"`
-	AvailablePowerKW     float64 `json:"available_power_kw"`
-	SafetyMarginPercent  float64 `json:"safety_margin_percent"`
-	TargetPowerKW        float64 `json:"target_power_kw"`
-	TargetPowerW         float64 `json:"target_power_w"`
-	CurrentConsumptionW  float64 `json:"current_consumption_w"`
-	ManagedMinersCount   int     `json:"managed_miners_count"`
-	Status               string  `json:"status"`
-	LastReadingAt        *string `json:"last_reading_at,omitempty"`
+	PlantGenerationKW      float64 `json:"plant_generation_kw"`
+	PlantContainerKW       float64 `json:"plant_container_kw"`
+	AvailablePowerKW       float64 `json:"available_power_kw"`
+	SafetyMarginPercent    float64 `json:"safety_margin_percent"`
+	TargetPowerKW          float64 `json:"target_power_kw"`
+	TargetPowerW           float64 `json:"target_power_w"`
+	CurrentConsumptionW    float64 `json:"current_consumption_w"`
+	ManagedConsumptionW    float64 `json:"managed_consumption_w"`
+	UnmanagedConsumptionW  float64 `json:"unmanaged_consumption_w"`
+	ExpectedConsumptionW   float64 `json:"expected_consumption_w"`
+	ExpectedDeltaW         float64 `json:"expected_delta_w"`
+	ManagedMinersCount     int     `json:"managed_miners_count"`
+	Status                 string  `json:"status"`
+	LastReadingAt          *string `json:"last_reading_at,omitempty"`
 }

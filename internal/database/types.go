@@ -198,12 +198,13 @@ type ChipSnapshotInput struct {
 
 // ModelPreset represents a single preset for a model with its expected power consumption.
 type ModelPreset struct {
-	ID             int64
-	ModelID        int64
-	Value          string
-	Position       int
-	ExpectedPowerW *float64
-	CreatedAt      time.Time
+	ID                 int64
+	ModelID            int64
+	Value              string
+	Position           int
+	ExpectedPowerW     *float64
+	ExpectedHashrateTH *float64
+	CreatedAt          time.Time
 }
 
 // PlantReading stores a snapshot of hydro plant generation and consumption.

@@ -9,6 +9,8 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -463,10 +465,12 @@ func (d *Discoverer) fetchPresets(ctx context.Context, client *firmware.Client, 
 		return nil, fmt.Errorf("update model presets %s: %w", modelAlias, err)
 	}
 
-	// Try to extract and store power consumption if available in tune_settings
+	// Try to extract and store power consumption and hashrate
 	for _, preset := range presets {
+		var powerPtr, hashratePtr *float64
+
+		// Try to extract power from tune_settings
 		if preset.TuneSettings != nil {
-			// Try to extract power from tune_settings
 			// Common fields might be "power", "target_power", "power_limit", etc.
 			var power float64
 			found := false
@@ -487,11 +491,25 @@ func (d *Discoverer) fetchPresets(ctx context.Context, client *firmware.Client, 
 			}
 
 			if found && power > 0 {
-				if err := d.store.UpdatePresetPower(ctx, modelAlias, preset.Name, power); err != nil {
-					d.log.Warn("failed to update preset power", "model", modelAlias, "preset", preset.Name, "err", err)
-				} else {
-					d.log.Debug("stored preset power", "model", modelAlias, "preset", preset.Name, "power_w", power)
-				}
+				powerPtr = &power
+			}
+		}
+
+		// Try to extract hashrate from pretty field (e.g., "2150 watt ~ 83 TH")
+		if preset.Pretty != "" {
+			hashrate := extractHashrateFromPretty(preset.Pretty)
+			if hashrate > 0 {
+				hashratePtr = &hashrate
+			}
+		}
+
+		// Update metrics if we found at least one value
+		if powerPtr != nil || hashratePtr != nil {
+			if err := d.store.UpdatePresetMetrics(ctx, modelAlias, preset.Name, powerPtr, hashratePtr); err != nil {
+				d.log.Warn("failed to update preset metrics", "model", modelAlias, "preset", preset.Name, "err", err)
+			} else {
+				d.log.Debug("stored preset metrics", "model", modelAlias, "preset", preset.Name,
+					"power_w", powerPtr, "hashrate_th", hashratePtr)
 			}
 		}
 	}
@@ -570,4 +588,18 @@ func generateAPIKey() (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(buf), nil
+}
+
+// extractHashrateFromPretty extracts the terahash value from preset pretty strings.
+// Example: "2150 watt ~ 83 TH" -> 83.0
+func extractHashrateFromPretty(pretty string) float64 {
+	// Match patterns like "83 TH", "83.5 TH", etc.
+	re := regexp.MustCompile(`(\d+(?:\.\d+)?)\s*TH`)
+	matches := re.FindStringSubmatch(pretty)
+	if len(matches) >= 2 {
+		if hashrate, err := strconv.ParseFloat(matches[1], 64); err == nil {
+			return hashrate
+		}
+	}
+	return 0
 }

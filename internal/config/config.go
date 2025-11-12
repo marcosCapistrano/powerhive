@@ -38,9 +38,11 @@ type HTTPConfig struct {
 }
 
 type PlantConfig struct {
-	APIEndpoint string `json:"api_endpoint"`
-	APIKey      string `json:"api_key"`
-	PlantID     string `json:"plant_id"`
+	APIEndpoint   string `json:"api_endpoint"`
+	APIKey        string `json:"api_key"`
+	PlantID       string `json:"plant_id"`
+	TestMode      bool   `json:"test_mode"`
+	TestServerURL string `json:"test_server_url"`
 }
 
 func Load(path string) (AppConfig, error) {

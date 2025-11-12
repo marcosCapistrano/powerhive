@@ -735,26 +735,22 @@ document.addEventListener("DOMContentLoaded", () => {
       card.className = "card";
       const selectId = `preset-${model.alias}`;
 
-      // Build preset power display
-      let presetPowerHTML = "";
+      // Create a map of preset -> hashrate for easy lookup
+      const presetHashrateMap = {};
+      let disabledPresetPower = null;
       if (model.presets_power && model.presets_power.length > 0) {
-        presetPowerHTML = `
-          <div class="preset-power-list">
-            <h4>Preset Power Consumption</h4>
-            <table class="preset-power-table">
-              <thead><tr><th>Preset</th><th>Power</th></tr></thead>
-              <tbody>
-                ${model.presets_power
-                  .map(
-                    (pp) =>
-                      `<tr><td>${pp.preset}</td><td>${pp.power_w ? formatPower(pp.power_w) : "—"}</td></tr>`
-                  )
-                  .join("")}
-              </tbody>
-            </table>
-          </div>
-        `;
+        model.presets_power.forEach((pp) => {
+          if (pp.hashrate_th) {
+            presetHashrateMap[pp.preset] = pp.hashrate_th;
+          }
+          if (pp.preset === "disabled" && pp.power_w) {
+            disabledPresetPower = pp.power_w;
+          }
+        });
       }
+
+      const disabledInputId = `disabled-power-${model.alias}`;
+      const disabledPresetExists = model.presets.some(p => p.toLowerCase() === "disabled");
 
       card.innerHTML = `
         <h3>${model.name}</h3>
@@ -763,18 +759,61 @@ document.addEventListener("DOMContentLoaded", () => {
         <select id="${selectId}" data-alias="${model.alias}">
           <option value="">-- not set --</option>
           ${model.presets
-            .map(
-              (preset) =>
-                `<option value="${preset}" ${
-                  model.max_preset && model.max_preset === preset ? "selected" : ""
-                }>${preset}</option>`
-            )
+            .map((preset) => {
+              const hashrate = presetHashrateMap[preset];
+              const displayText = hashrate
+                ? `${preset} ~ ${hashrate.toFixed(1)} TH/s`
+                : preset;
+              return `<option value="${preset}" ${
+                model.max_preset && model.max_preset === preset ? "selected" : ""
+              }>${displayText}</option>`;
+            })
             .join("")}
         </select>
-        ${presetPowerHTML}
+        ${disabledPresetExists ? `
+          <div class="input-group" style="margin-top: 1rem;">
+            <label for="${disabledInputId}">Disabled Preset Power (W):</label>
+            <input
+              type="number"
+              id="${disabledInputId}"
+              data-alias="${model.alias}"
+              class="disabled-power-input"
+              placeholder="e.g., 50"
+              min="0"
+              step="1"
+              value="${disabledPresetPower !== null ? disabledPresetPower : ''}"
+            >
+            <button class="save-disabled-power-btn" data-alias="${model.alias}">Save</button>
+          </div>
+        ` : ''}
         <p class="muted small">Last seen: ${formatRelativeTime(model.created_at)}</p>
       `;
       refs.modelsContainer.appendChild(card);
+    });
+
+    // Add event listeners for disabled power save buttons
+    document.querySelectorAll(".save-disabled-power-btn").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        const alias = e.target.dataset.alias;
+        const input = document.getElementById(`disabled-power-${alias}`);
+        const value = parseFloat(input.value);
+
+        if (isNaN(value) || value < 0) {
+          showNotification("Please enter a valid power value (0 or greater)", "error");
+          return;
+        }
+
+        try {
+          await fetchJSON(`/api/models/${alias}`, {
+            method: "PATCH",
+            body: JSON.stringify({ disabled_preset_power_w: value }),
+          });
+          showNotification(`Disabled preset power updated to ${value}W`, "success");
+          await loadModels();
+        } catch (err) {
+          showNotification(`Failed to update: ${err.message}`, "error");
+        }
+      });
     });
   };
 
@@ -793,6 +832,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("available-power").textContent = status.available_power_kw.toFixed(2);
     document.getElementById("target-power").textContent = status.target_power_kw.toFixed(2);
     document.getElementById("current-consumption").textContent = status.current_consumption_w.toFixed(0);
+    document.getElementById("expected-consumption").textContent = status.expected_consumption_w.toFixed(0);
     document.getElementById("managed-count").textContent = status.managed_miners_count;
     document.getElementById("safety-margin-input").value = status.safety_margin_percent;
 

@@ -1,11 +1,13 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math"
+	"net/http"
 	"sort"
 	"strconv"
 	"strings"
@@ -97,27 +99,29 @@ func (b *PowerBalancer) balance(ctx context.Context) error {
 		"target_kw", targetPower,
 	)
 
-	// Get all managed miners with their current status
+	// Get all miners with their current status
 	miners, err := b.store.ListMiners(ctx)
 	if err != nil {
 		return fmt.Errorf("list miners: %w", err)
 	}
 
-	// Filter to managed miners that are online and have necessary data
+	// Filter to managed miners for balancing decisions
 	eligible := b.filterEligibleMiners(miners)
 	if len(eligible) == 0 {
 		b.log.Debug("no eligible miners for balancing")
-		return nil
 	}
 
-	// Load preset power data by parsing preset values directly
-	presetPowerMap, err := b.loadPresetPowerMap(eligible)
+	// Get all online miners (managed + unmanaged) for consumption calculation
+	allOnline := b.filterOnlineMiners(miners)
+
+	// Load preset power data for all online miners
+	presetPowerMap, err := b.loadPresetPowerMap(allOnline)
 	if err != nil {
 		return fmt.Errorf("load preset power data: %w", err)
 	}
 
-	// Calculate current total consumption from miners
-	currentConsumption := b.calculateCurrentConsumption(eligible, presetPowerMap)
+	// Calculate current total consumption from ALL online miners (managed + unmanaged)
+	currentConsumption := b.calculateCurrentConsumption(allOnline, presetPowerMap)
 
 	// Convert target from kW to W for comparison with miner presets
 	targetPowerW := targetPower * 1000.0
@@ -160,13 +164,17 @@ func (b *PowerBalancer) balance(ctx context.Context) error {
 		cooldownMap = make(map[string]time.Time)
 	}
 
-	// Adjust presets to match target
-	adjustedCount := 0
+	// Calculate planned changes and expected consumption
+	plannedChanges := make(map[string]struct {
+		targetPreset *string
+		targetPower  *float64
+	})
+
+	expectedConsumption := currentConsumptionW
 	for _, me := range minerEfficiencies {
 		// Check cooldown
 		if lastChange, exists := cooldownMap[me.miner.ID]; exists {
 			if time.Since(lastChange) < presetChangeCooldown {
-				b.log.Debug("miner on cooldown", "miner", me.miner.ID)
 				continue
 			}
 		}
@@ -174,7 +182,6 @@ func (b *PowerBalancer) balance(ctx context.Context) error {
 		// Determine target preset
 		targetPreset, targetPower, err := b.determineTargetPreset(me.miner, delta, presetPowerMap)
 		if err != nil {
-			b.log.Warn("failed to determine target preset", "miner", me.miner.ID, "err", err)
 			continue
 		}
 
@@ -182,9 +189,54 @@ func (b *PowerBalancer) balance(ctx context.Context) error {
 			continue // No change needed
 		}
 
+		// Store planned change
+		plannedChanges[me.miner.ID] = struct {
+			targetPreset *string
+			targetPower  *float64
+		}{targetPreset: targetPreset, targetPower: targetPower}
+
+		// Calculate expected consumption (current of unchanged + new of changed)
+		if me.currentPower != nil && targetPower != nil {
+			powerChange := *targetPower - *me.currentPower
+			expectedConsumption += powerChange
+			delta -= powerChange
+		}
+
+		// Stop planning if we're close enough to target
+		if math.Abs(delta) < 2000 {
+			break
+		}
+	}
+
+	// Store and POST expected consumption
+	if err := b.storeExpectedConsumption(ctx, expectedConsumption); err != nil {
+		b.log.Warn("failed to store expected consumption", "err", err)
+	}
+
+	if err := b.postExpectedConsumptionToTestServer(ctx, expectedConsumption); err != nil {
+		b.log.Warn("failed to post expected consumption to test server", "err", err)
+	}
+
+	b.log.Info("expected consumption calculated",
+		"current_w", currentConsumptionW,
+		"expected_w", expectedConsumption,
+		"delta_w", expectedConsumption-currentConsumptionW,
+		"planned_changes", len(plannedChanges))
+
+	// Now apply the planned changes
+	adjustedCount := 0
+	delta = targetPowerW - currentConsumptionW // Reset delta for actual application
+
+	for _, me := range minerEfficiencies {
+		// Check if we have a planned change for this miner
+		planned, exists := plannedChanges[me.miner.ID]
+		if !exists {
+			continue
+		}
+
 		// Apply preset change
-		if err := b.applyPresetChange(ctx, me.miner, me.currentPreset, *targetPreset,
-			me.currentPower, targetPower, currentConsumptionW, targetPowerW,
+		if err := b.applyPresetChange(ctx, me.miner, me.currentPreset, *planned.targetPreset,
+			me.currentPower, planned.targetPower, currentConsumptionW, targetPowerW,
 			plantReading.AvailablePower*1000, "automatic_balance"); err != nil {
 			b.log.Error("failed to apply preset change", "miner", me.miner.ID, "err", err)
 			continue
@@ -195,8 +247,8 @@ func (b *PowerBalancer) balance(ctx context.Context) error {
 		adjustedCount++
 
 		// Recalculate delta
-		if me.currentPower != nil && targetPower != nil {
-			powerChange := *targetPower - *me.currentPower
+		if me.currentPower != nil && planned.targetPower != nil {
+			powerChange := *planned.targetPower - *me.currentPower
 			delta -= powerChange
 			currentConsumptionW += powerChange
 		}
@@ -204,7 +256,7 @@ func (b *PowerBalancer) balance(ctx context.Context) error {
 		b.log.Info("preset changed",
 			"miner", me.miner.ID,
 			"old_preset", stringOrNil(me.currentPreset),
-			"new_preset", *targetPreset,
+			"new_preset", *planned.targetPreset,
 			"delta_remaining_w", delta,
 		)
 
@@ -253,6 +305,22 @@ func (b *PowerBalancer) filterEligibleMiners(miners []database.Miner) []database
 	return eligible
 }
 
+// filterOnlineMiners returns all miners (managed and unmanaged) that are online
+// and have a model. Used for calculating total consumption baseline.
+func (b *PowerBalancer) filterOnlineMiners(miners []database.Miner) []database.Miner {
+	var online []database.Miner
+	for _, miner := range miners {
+		if miner.IP == nil || *miner.IP == "" {
+			continue
+		}
+		if miner.Model == nil {
+			continue
+		}
+		online = append(online, miner)
+	}
+	return online
+}
+
 // parsePresetWattage extracts wattage from preset strings like "900W", "1000W", "1200W".
 // Returns the power in watts and an error if the format is invalid.
 func parsePresetWattage(preset string) (float64, error) {
@@ -288,37 +356,47 @@ func parsePresetWattage(preset string) (float64, error) {
 }
 
 func (b *PowerBalancer) loadPresetPowerMap(miners []database.Miner) (map[string]map[string]float64, error) {
+	// Load all preset power data from database
+	allPresets, err := b.store.GetAllModelPresets(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("load model presets: %w", err)
+	}
+
 	presetPowerMap := make(map[string]map[string]float64)
 
-	for _, miner := range miners {
-		if miner.Model == nil {
-			continue
-		}
-
-		modelAlias := miner.Model.Alias
-		if _, exists := presetPowerMap[modelAlias]; exists {
-			continue // Already loaded
-		}
-
-		// Parse preset values directly from the model's preset list
+	// Convert database presets to power map
+	for modelAlias, presets := range allPresets {
 		powerMap := make(map[string]float64)
-		for _, presetValue := range miner.Model.Presets {
-			watts, err := parsePresetWattage(presetValue)
-			if err != nil {
-				b.log.Warn("failed to parse preset wattage, skipping",
-					"model", modelAlias,
-					"preset", presetValue,
-					"err", err)
-				continue
+		for _, preset := range presets {
+			// Only include presets with expected power set
+			if preset.ExpectedPowerW != nil {
+				powerMap[preset.Value] = *preset.ExpectedPowerW
 			}
-			powerMap[presetValue] = watts
 		}
 
+		// If no presets have power set, try parsing from preset names as fallback
 		if len(powerMap) == 0 {
-			b.log.Warn("no parseable presets found for model", "model", modelAlias)
+			// Find the model to get preset list
+			for _, miner := range miners {
+				if miner.Model != nil && miner.Model.Alias == modelAlias {
+					for _, presetValue := range miner.Model.Presets {
+						watts, err := parsePresetWattage(presetValue)
+						if err != nil {
+							// Skip presets that can't be parsed (like "disabled")
+							continue
+						}
+						powerMap[presetValue] = watts
+					}
+					break
+				}
+			}
 		}
 
-		presetPowerMap[modelAlias] = powerMap
+		if len(powerMap) > 0 {
+			presetPowerMap[modelAlias] = powerMap
+		} else {
+			b.log.Warn("no preset power data found for model", "model", modelAlias)
+		}
 	}
 
 	return presetPowerMap, nil
@@ -328,20 +406,44 @@ func (b *PowerBalancer) calculateCurrentConsumption(miners []database.Miner, pre
 	total := 0.0
 
 	for _, miner := range miners {
-		if miner.LatestStatus == nil || miner.LatestStatus.Preset == nil {
-			continue
-		}
 		if miner.Model == nil {
 			continue
 		}
 
-		preset := *miner.LatestStatus.Preset
-		modelAlias := miner.Model.Alias
+		var minerPower float64
+		found := false
 
-		if powerMap, exists := presetPowerMap[modelAlias]; exists {
-			if power, exists := powerMap[preset]; exists {
-				total += power
+		// Try to get power from preset map (using current preset)
+		if miner.LatestStatus != nil && miner.LatestStatus.Preset != nil {
+			preset := *miner.LatestStatus.Preset
+			modelAlias := miner.Model.Alias
+
+			if powerMap, exists := presetPowerMap[modelAlias]; exists {
+				if power, exists := powerMap[preset]; exists {
+					minerPower = power
+					found = true
+				}
 			}
+		}
+
+		// Fallback to status power consumption if available
+		if !found && miner.LatestStatus != nil && miner.LatestStatus.PowerConsumption != nil {
+			minerPower = *miner.LatestStatus.PowerConsumption
+			found = true
+		}
+
+		// If still not found, log warning but don't add to total
+		if !found {
+			if miner.LatestStatus != nil {
+				b.log.Debug("no power data for miner",
+					"miner", miner.ID,
+					"preset", stringOrNil(miner.LatestStatus.Preset))
+			} else {
+				b.log.Debug("no power data for miner (no status)",
+					"miner", miner.ID)
+			}
+		} else {
+			total += minerPower
 		}
 	}
 
@@ -352,15 +454,10 @@ func (b *PowerBalancer) calculateEfficiencies(miners []database.Miner, presetPow
 	var efficiencies []minerEfficiency
 
 	for _, miner := range miners {
-		if miner.LatestStatus == nil || miner.LatestStatus.Hashrate == nil {
+		if miner.LatestStatus == nil {
 			continue
 		}
 		if miner.Model == nil {
-			continue
-		}
-
-		hashrateTH := *miner.LatestStatus.Hashrate / 1e12 // Convert to TH/s
-		if hashrateTH <= 0 {
 			continue
 		}
 
@@ -378,11 +475,27 @@ func (b *PowerBalancer) calculateEfficiencies(miners []database.Miner, presetPow
 			currentPower = miner.LatestStatus.PowerConsumption
 		}
 
-		if currentPower == nil || *currentPower <= 0 {
+		// Skip if no power data available
+		if currentPower == nil {
 			continue
 		}
 
-		efficiency := *currentPower / hashrateTH
+		// Calculate hashrate in TH/s
+		var hashrateTH float64
+		if miner.LatestStatus.Hashrate != nil {
+			hashrateTH = *miner.LatestStatus.Hashrate / 1e12
+		}
+
+		// For miners with 0 hashrate (like disabled preset), set very high efficiency
+		// so they are prioritized for increases (sorted worst first)
+		var efficiency float64
+		if hashrateTH <= 0 {
+			// Very high efficiency means "worst" for reduction, "best" for increase
+			// Use a large number so disabled miners are increased first
+			efficiency = 1e9 // Essentially infinite W/TH
+		} else {
+			efficiency = *currentPower / hashrateTH
+		}
 
 		efficiencies = append(efficiencies, minerEfficiency{
 			miner:         miner,
@@ -605,4 +718,76 @@ func stringOrNil(s *string) string {
 
 func ptrString(s string) *string {
 	return &s
+}
+
+// storeExpectedConsumption stores the expected consumption value in app settings.
+func (b *PowerBalancer) storeExpectedConsumption(ctx context.Context, consumptionW float64) error {
+	data, err := json.Marshal(consumptionW)
+	if err != nil {
+		return err
+	}
+	return b.store.SetAppSetting(ctx, "expected_consumption_w", string(data))
+}
+
+// GetExpectedConsumption retrieves the stored expected consumption value.
+func (b *PowerBalancer) GetExpectedConsumption(ctx context.Context) (float64, error) {
+	data, err := b.store.GetAppSetting(ctx, "expected_consumption_w")
+	if err != nil {
+		return 0, err
+	}
+
+	var consumptionW float64
+	if err := json.Unmarshal([]byte(data), &consumptionW); err != nil {
+		return 0, err
+	}
+	return consumptionW, nil
+}
+
+// postExpectedConsumptionToTestServer sends the expected consumption to the test server.
+func (b *PowerBalancer) postExpectedConsumptionToTestServer(ctx context.Context, consumptionW float64) error {
+	if !b.cfg.Plant.TestMode {
+		return nil // Skip if not in test mode
+	}
+
+	if b.cfg.Plant.TestServerURL == "" {
+		return fmt.Errorf("test mode enabled but test server URL not configured")
+	}
+
+	// Convert watts to megawatts
+	consumptionMW := consumptionW / 1_000_000.0
+
+	payload := map[string]float64{
+		"expected_consumption_mw": consumptionMW,
+	}
+
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("marshal payload: %w", err)
+	}
+
+	url := b.cfg.Plant.TestServerURL + "/data/consumption"
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(payloadBytes))
+	if err != nil {
+		return fmt.Errorf("create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("post to test server: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("test server returned status %d", resp.StatusCode)
+	}
+
+	b.log.Info("posted expected consumption to test server",
+		"consumption_w", consumptionW,
+		"consumption_mw", consumptionMW,
+		"url", url)
+
+	return nil
 }

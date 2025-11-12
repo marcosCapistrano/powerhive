@@ -111,6 +111,7 @@ var schemaStatements = []string{
 	);`,
 	`CREATE INDEX IF NOT EXISTS idx_chain_chips_snapshot ON chain_chips(chain_snapshot_id);`,
 	`ALTER TABLE model_presets ADD COLUMN expected_power_w REAL;`,
+	`ALTER TABLE model_presets ADD COLUMN expected_hashrate_th REAL;`,
 	`CREATE TABLE IF NOT EXISTS plant_readings (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		plant_id TEXT NOT NULL,

@@ -270,7 +270,7 @@ func validateModelInput(input ModelInput) error {
 // GetModelPresets returns all presets with power consumption data for a model.
 func (s *Store) GetModelPresets(ctx context.Context, modelAlias string) ([]ModelPreset, error) {
 	rows, err := s.db.QueryContext(ctx, `
-		SELECT mp.id, mp.model_id, mp.value, mp.position, mp.expected_power_w, mp.created_at
+		SELECT mp.id, mp.model_id, mp.value, mp.position, mp.expected_power_w, mp.expected_hashrate_th, mp.created_at
 		FROM model_presets mp
 		JOIN models m ON mp.model_id = m.id
 		WHERE m.alias = ?
@@ -284,16 +284,18 @@ func (s *Store) GetModelPresets(ctx context.Context, modelAlias string) ([]Model
 	var presets []ModelPreset
 	for rows.Next() {
 		var (
-			preset       ModelPreset
-			expectedPower sql.NullFloat64
+			preset          ModelPreset
+			expectedPower   sql.NullFloat64
+			expectedHashrate sql.NullFloat64
 		)
 
 		if err := rows.Scan(&preset.ID, &preset.ModelID, &preset.Value, &preset.Position,
-			&expectedPower, &preset.CreatedAt); err != nil {
+			&expectedPower, &expectedHashrate, &preset.CreatedAt); err != nil {
 			return nil, fmt.Errorf("scan preset: %w", err)
 		}
 
 		preset.ExpectedPowerW = floatPtrFromNull(expectedPower)
+		preset.ExpectedHashrateTH = floatPtrFromNull(expectedHashrate)
 		presets = append(presets, preset)
 	}
 
@@ -308,7 +310,7 @@ func (s *Store) GetModelPresets(ctx context.Context, modelAlias string) ([]Model
 // mapped by model alias. This is more efficient than calling GetModelPresets repeatedly.
 func (s *Store) GetAllModelPresets(ctx context.Context) (map[string][]ModelPreset, error) {
 	rows, err := s.db.QueryContext(ctx, `
-		SELECT m.alias, mp.id, mp.model_id, mp.value, mp.position, mp.expected_power_w, mp.created_at
+		SELECT m.alias, mp.id, mp.model_id, mp.value, mp.position, mp.expected_power_w, mp.expected_hashrate_th, mp.created_at
 		FROM model_presets mp
 		JOIN models m ON mp.model_id = m.id
 		ORDER BY m.alias, mp.position, mp.id
@@ -321,17 +323,19 @@ func (s *Store) GetAllModelPresets(ctx context.Context) (map[string][]ModelPrese
 	result := make(map[string][]ModelPreset)
 	for rows.Next() {
 		var (
-			alias         string
-			preset        ModelPreset
-			expectedPower sql.NullFloat64
+			alias            string
+			preset           ModelPreset
+			expectedPower    sql.NullFloat64
+			expectedHashrate sql.NullFloat64
 		)
 
 		if err := rows.Scan(&alias, &preset.ID, &preset.ModelID, &preset.Value, &preset.Position,
-			&expectedPower, &preset.CreatedAt); err != nil {
+			&expectedPower, &expectedHashrate, &preset.CreatedAt); err != nil {
 			return nil, fmt.Errorf("scan preset: %w", err)
 		}
 
 		preset.ExpectedPowerW = floatPtrFromNull(expectedPower)
+		preset.ExpectedHashrateTH = floatPtrFromNull(expectedHashrate)
 		result[alias] = append(result[alias], preset)
 	}
 
@@ -343,15 +347,44 @@ func (s *Store) GetAllModelPresets(ctx context.Context) (map[string][]ModelPrese
 }
 
 // UpdatePresetPower updates the expected power consumption for a specific preset.
+// Deprecated: Use UpdatePresetMetrics to update both power and hashrate.
 func (s *Store) UpdatePresetPower(ctx context.Context, modelAlias, presetValue string, powerW float64) error {
-	res, err := s.db.ExecContext(ctx, `
+	return s.UpdatePresetMetrics(ctx, modelAlias, presetValue, &powerW, nil)
+}
+
+// UpdatePresetMetrics updates the expected power consumption and/or hashrate for a specific preset.
+// Pass nil for powerW or hashrateTH to skip updating that field.
+func (s *Store) UpdatePresetMetrics(ctx context.Context, modelAlias, presetValue string, powerW, hashrateTH *float64) error {
+	if powerW == nil && hashrateTH == nil {
+		return fmt.Errorf("at least one of powerW or hashrateTH must be provided")
+	}
+
+	// Build dynamic query based on which fields are being updated
+	var setClauses []string
+	var args []interface{}
+
+	if powerW != nil {
+		setClauses = append(setClauses, "expected_power_w = ?")
+		args = append(args, *powerW)
+	}
+	if hashrateTH != nil {
+		setClauses = append(setClauses, "expected_hashrate_th = ?")
+		args = append(args, *hashrateTH)
+	}
+
+	// Add WHERE clause parameters
+	args = append(args, modelAlias, presetValue)
+
+	query := fmt.Sprintf(`
 		UPDATE model_presets
-		SET expected_power_w = ?
+		SET %s
 		WHERE model_id = (SELECT id FROM models WHERE alias = ?)
 			AND value = ?
-	`, powerW, modelAlias, presetValue)
+	`, strings.Join(setClauses, ", "))
+
+	res, err := s.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("update preset power for %s/%s: %w", modelAlias, presetValue, err)
+		return fmt.Errorf("update preset metrics for %s/%s: %w", modelAlias, presetValue, err)
 	}
 
 	rows, err := res.RowsAffected()

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"flag"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -17,6 +18,11 @@ import (
 )
 
 func main() {
+	// Parse command-line flags
+	testMode := flag.Bool("test", false, "Enable test mode (POST expected consumption to test server)")
+	testServerURL := flag.String("test-server-url", "", "Test server URL (overrides config, e.g., http://localhost:8090)")
+	flag.Parse()
+
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}))
@@ -25,6 +31,16 @@ func main() {
 	if err != nil {
 		logger.Error("load config failed", "err", err)
 		os.Exit(1)
+	}
+
+	// Override config with command-line flags
+	if *testMode {
+		cfg.Plant.TestMode = true
+		logger.Info("test mode enabled")
+	}
+	if *testServerURL != "" {
+		cfg.Plant.TestServerURL = *testServerURL
+		logger.Info("test server URL overridden", "url", *testServerURL)
 	}
 
 	db, err := sql.Open("sqlite", cfg.Database.Path)
